@@ -1,4 +1,11 @@
-# electric-sudoku
+# Soduku – Electric Clojure
+
+First try using "Electric #Clojure":
+Multiplayer Sudoku in [<150 LOC](https://github.com/s-ol/electric-sudoku/blob/main/src/app/sudoku.cljc), ~6h. Pretty neat!
+
+https://user-images.githubusercontent.com/124158/220984721-bd0960da-8d05-49e1-b9b3-a948e942bfc8.mp4
+
+# Setup
 
 ```
 $ clj -A:dev -X user/main
