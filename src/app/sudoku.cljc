@@ -9,16 +9,9 @@
 
 
 ;;; logic
-
+;;;;;;;;;
 (defn map2dv [f]
   (mapv #(mapv (partial f %) (range 9)) (range 9)))
-
-(defn random-cell [x y]
-  (cond
-    (< (rand) 0.2) (int (rand 10))
-    (< (rand) 0.3) #{1}
-    (< (rand) 0.5) #{1 2 3}
-    :else #{}))
 
 #?(:clj (defn make-sudoku [clear-count]
           ;   VERY_EASY: more than 50 given numbers, remove less than 31 numbers
@@ -43,7 +36,7 @@
   ; (and (not notes) (set? v) (= 1 (count v))) (first v)
 
 ;;; app state
-
+;;;;;;;;;;;;;
 ; dynamic def for sharing state between server/client
 (e/def state)
 
@@ -51,7 +44,7 @@
 (def !state #?(:clj (atom (make-sudoku 64))))
 
 ;;; view stuff
-
+;;;;;;;;;;;;;;
 (defn i->num [v]
   (inc (+ v (quot v 3))))
 
@@ -72,7 +65,7 @@
                         (string/join " " (sort val))))
              (when-not (= typ :fixed)
                (dom/on "focus"
-                 (e/fn [e] (reset! !f pos)))
+                 (e/fn [_] (reset! !f pos)))
                (dom/on "click"
                  (e/fn [e] (.stopPropagation e)))
                (dom/on "keydown"
@@ -142,7 +135,7 @@
       (let [!focus (atom nil)
             focus (e/watch !focus)]
         (dom/on "click"
-          (e/fn [e] (reset! !focus nil)))
+          (e/fn [_] (reset! !focus nil)))
         
         (dom/div
           (dom/props {:class "sudoku"})
