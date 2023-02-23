@@ -1,0 +1,80 @@
+html {
+  background: #ccc;
+}
+
+body {
+  font-family: sans-serif;
+  font-weight: 400;
+ 
+  width: min-content;
+  margin: auto;
+  padding: 1rem 2rem;
+  
+  background: #fff;
+}
+
+.sudoku {
+  display: grid;
+  grid-template-columns: repeat(3, 3.2rem) 0.15rem repeat(3, 3.2rem) 0.15rem repeat(3, 3.2rem);
+  grid-template-rows: repeat(3, 3.2rem) 0.15rem repeat(3, 3.2rem) 0.15rem repeat(3, 3.2rem);
+  width: fit-content;
+
+  gap: 0.1em;
+  place-items: center;
+  
+  padding: 0.5em;
+  margin: 1em 0;
+  background: #999;
+}
+
+.cell {
+  width: 3rem;
+  height: 3rem;
+  background: #fff;
+  color: #048;
+}
+
+
+.cell:not(.cell-fixed):focus,
+.cell:not(.cell-fixed).focused {
+  border: 0.25rem solid lightblue;
+  margin: 0;
+}
+
+.cell.cell-fixed,
+.cell.cell-single {
+  font-size: 2.5rem;
+  line-height: 3rem;
+  text-align: center;
+}
+
+.cell.cell-fixed {
+  color: #000;
+  font-weight: bold;
+}
+
+.keyboard {
+  display: grid;
+  width: fit-content;
+  margin: auto;
+  grid-template-columns: repeat(6, 4rem);
+}
+
+.keyboard button {
+  font-size: 2.0rem;
+  grid-column: span 2;
+  margin: 0.2rem 0.1rem;
+  
+  border: 2px solid #999;
+  background: #eee;
+}
+
+.keyboard button.clear,
+.keyboard button.notes {
+  font-size: 1.5rem;
+  grid-column: span 3;
+}
+
+button.notes.notes-active {
+  background: darkgray;
+}
