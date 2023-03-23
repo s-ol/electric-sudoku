@@ -120,16 +120,9 @@
             difficulty (e/watch !difficulty)]
         (dom/div
           (dom/label (dom/props {:for "difficulty"}) (dom/text "difficulty"))
-          (ui/range difficulty (e/fn [v] 
-                                  (println  v)
-                                  (reset! !difficulty v))
-                                     ; (partial reset! !difficulty))
-                    (dom/props {:id "difficulty"
-                                :min 1
-                                :max 59}))
-          (ui/button (e/fn [] (e/server
-                               (println (type difficulty))
-                               (reset! !state (make-sudoku difficulty))))
+          (ui/range difficulty (e/fn [v]  (reset! !difficulty v))
+                    (dom/props {:id "difficulty" :min 1 :max 59}))
+          (ui/button (e/fn [] (e/server (reset! !state (make-sudoku difficulty))))
                      (dom/text "regenerate"))))
    
       (let [!focus (atom nil)
