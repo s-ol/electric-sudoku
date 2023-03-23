@@ -9,3 +9,4 @@ report.html
 *.iml
 .lsp
 .clj-kondo
+/target

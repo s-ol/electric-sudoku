@@ -1,6 +1,5 @@
 (ns app.sudoku
-  #?(:cljs (:require-macros app.sudoku)
-     :clj (:import [de.sfuhrm.sudoku Creator]))
+  #?(:clj (:import [de.sfuhrm.sudoku Creator]))
 
   (:require [hyperfiddle.electric :as e]
             [hyperfiddle.electric-dom2 :as dom]

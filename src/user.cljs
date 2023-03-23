@@ -1,4 +1,4 @@
-(ns user ^:dev/always ; recompile (macroexpand) electric-main when any cljs src changes
+(ns ^:dev/always user ; recompile (macroexpand) electric-main when any cljs src changes
   (:require
     app.sudoku
     hyperfiddle.electric
