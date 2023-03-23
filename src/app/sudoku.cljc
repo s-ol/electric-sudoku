@@ -129,8 +129,11 @@
 
 (e/defn show-login []
   (let [!password (atom "")
-        !out (atom nil)
+        !out (atom (let [path (. js/location -pathname)]
+                     (when (> (count path) 1) (subs path 1))))
         out (e/watch !out)]
+    (let [path (str "/" out)]
+      (. js/history pushState path "" path))
     (if out
       (dom/div
         (dom/span
