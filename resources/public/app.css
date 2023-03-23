@@ -6,7 +6,7 @@ body {
   font-family: sans-serif;
   font-weight: 400;
  
-  width: min-content;
+  width: 31.1rem;
   margin: auto;
   padding: 1rem 2rem;
   
@@ -19,11 +19,11 @@ body {
   grid-template-rows: repeat(3, 3.2rem) 0.15rem repeat(3, 3.2rem) 0.15rem repeat(3, 3.2rem);
   width: fit-content;
 
-  gap: 0.1em;
+  gap: 0.1rem;
   place-items: center;
   
-  padding: 0.5em;
-  margin: 1em 0;
+  padding: 0.5rem;
+  margin: 1rem 0;
   background: #999;
 }
 

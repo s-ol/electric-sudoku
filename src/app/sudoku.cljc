@@ -41,7 +41,8 @@
 ;;;;;;;;;;;;;
 
 ; dynamic def for sharing state between server/client
-(e/def state)
+(e/def ^:dynamic state)
+(e/def ^:dynamic code)
 
 #?(:clj (defn make-atom [init-val]
           (let [state-file-path (System/getenv "SUDOKU_STATE_FILE")]
@@ -54,7 +55,10 @@
               (atom init-val)))))
 
 ; server-side atom for actual storage
-(def !state #?(:clj (make-atom (make-sudoku 64))))
+(def !state #?(:clj (make-atom {})))
+
+(defmacro swap-state! [& args]
+  `(swap! !state update-in [(e/client code)] ~@args))
 
 
 ;;; view stuff
@@ -87,15 +91,15 @@
                  (e/fn [e]
                    (cond
                      (contains? #{"Backspace" "Clear" "Delete"} (.-key e))
-                     (e/server (swap! !state update-in pos (constantly #{}))) 
-                    
+                     (e/server (swap-state! update-in pos (constantly #{})))
+
                      (string/starts-with? (.-code e) "Digit")
                      (let [n (-> e .-code last int)]
                        (when (<= 1 n 9)
                          (.preventDefault e)
                          (if (.-shiftKey e)
-                           (e/server (swap! !state update-in pos toggle-in-set n))
-                           (e/server (swap! !state update-in pos (constantly n)))))))))))))
+                           (e/server (swap-state! update-in pos toggle-in-set n))
+                           (e/server (swap-state! update-in pos (constantly n)))))))))))))
 
 (e/defn Keyboard [pos]
   (let [v (get-in state pos)
@@ -108,48 +112,90 @@
 
       (e/for [n (range 1 10)]
         (ui/button (e/fn []
-                     (if notes
-                       (e/server (swap! !state update-in pos toggle-in-set n))
-                       (e/server (swap! !state update-in pos (constantly n)))))
+                     (e/server (if notes
+                                 (swap-state! update-in pos toggle-in-set n)
+                                 (swap-state! update-in pos (constantly n)))))
                    (dom/text n)))
-      (ui/button (e/fn [] (e/server (swap! !state update-in pos (constantly #{}))))
+      (ui/button (e/fn [] (e/server (swap-state! update-in pos (constantly #{}))))
                  (dom/props {:class "clear"})
                  (dom/text "clear"))
 
       (ui/button
         (e/fn []
-          (when-not notes (e/server (swap! !state update-in pos set-notes)))
+          (when-not notes (e/server (swap-state! update-in pos set-notes)))
           (swap! !notes not))
         (dom/props {:class ["notes" (when notes "notes-active")]})
         (dom/text "notes")))))
 
+(e/defn show-login []
+  (let [!password (atom "")
+        !out (atom nil)
+        out (e/watch !out)]
+    (if out
+      (dom/div
+        (dom/span
+          (dom/text "game code: ")
+          (dom/code (dom/text out))
+          (dom/text " "))
+
+        (ui/button
+          (e/fn [] (reset! !out nil))
+          (dom/text "leave")))
+      (dom/form
+        (dom/on "submit" (e/fn [e] (.preventDefault e)))
+        (dom/p (dom/text "enter a game code to join or create a game:"))
+        (ui/input (e/watch !password) (e/fn [v] (reset! !password v)))
+        (ui/button
+          (e/fn []
+            (when-not (empty? @!password)
+              (reset! !out @!password)))
+          (dom/text "start"))))
+    out))
+
+(e/defn Game []
+  (let [!focus (atom nil)
+        focus (e/watch !focus)]
+    (dom/on "click"
+      (e/fn [_] (reset! !focus nil)))
+
+    (dom/p (dom/text "click a cell and use the keypad or use the number keys and shift to enter numbers and notes."))
+    (ui/button
+      (e/fn []
+        (when (.confirm js/window "Really clear this game and restart?")
+          (e/server (swap-state! (constantly nil)))))
+
+      (dom/text "regenerate"))
+
+    (dom/div
+      (dom/props {:class "sudoku"})
+      (e/for [y (range 9) x (range 9)]
+        (Cell. [x y] focus !focus)))
+
+    (when focus
+      (dom/hr)
+      (Keyboard. focus))))
+
+(e/defn NewGame []
+  (let [!difficulty (atom 31)
+        difficulty (e/watch !difficulty)]
+
+    (dom/div
+      (dom/label (dom/props {:for "difficulty"}) (dom/text "difficulty:"))
+      (ui/range difficulty (e/fn [v] (reset! !difficulty v))
+                (dom/props {:id "difficulty" :min 1 :max 59})))
+
+    (ui/button (e/fn []
+                 (e/server (swap-state! (constantly (make-sudoku difficulty)))))
+               (dom/text "generate"))))
+
 (e/defn App []
   (e/client
-    (binding [state (e/server (e/watch !state))]
-      (dom/link (dom/props {:rel :stylesheet :href "/app.css"}))
-      (dom/h1 (dom/text "minimal sudoku game"))
-      (dom/p (dom/text "it's multiplayer, try two tabs!"))
-      (dom/p (dom/text "click a cell and use the keypad or use the number keys and shift to enter numbers and notes."))
-
-      (let [!difficulty (atom 31)
-            difficulty (e/watch !difficulty)]
-        (dom/div
-          (dom/label (dom/props {:for "difficulty"}) (dom/text "difficulty"))
-          (ui/range difficulty (e/fn [v]  (reset! !difficulty v))
-                    (dom/props {:id "difficulty" :min 1 :max 59}))
-          (ui/button (e/fn [] (e/server (reset! !state (make-sudoku difficulty))))
-                     (dom/text "regenerate"))))
-   
-      (let [!focus (atom nil)
-            focus (e/watch !focus)]
-        (dom/on "click"
-          (e/fn [_] (reset! !focus nil)))
-        
-        (dom/div
-          (dom/props {:class "sudoku"})
-          (e/for [y (range 9) x (range 9)]
-            (Cell. [x y] focus !focus)))
-   
-        (when focus
-          (dom/hr)
-          (Keyboard. focus))))))
+    (dom/link (dom/props {:rel :stylesheet :href "/app.css"}))
+    (dom/h1 (dom/text "multiplayer sudoku game"))
+    (let [game-code (show-login.)]
+      (when game-code
+        (binding [state (e/server (get (e/watch !state) game-code))
+                  code game-code]
+          (if state
+            (Game.)
+            (NewGame.)))))))
