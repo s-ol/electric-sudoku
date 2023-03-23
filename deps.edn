@@ -9,7 +9,8 @@
         org.clojure/clojure {:mvn/version "1.11.1"}
         org.clojure/clojurescript {:mvn/version "1.11.60"}
         org.clojure/tools.logging {:mvn/version "1.2.4"}
-        de.sfuhrm/sudoku {:mvn/version "5.0.1"}}
+        de.sfuhrm/sudoku {:mvn/version "5.0.1"}
+        duratom/duratom {:mvn/version "0.5.4"}}
  :aliases {:dev
            {:extra-deps
             {binaryage/devtools {:mvn/version "1.0.6"}

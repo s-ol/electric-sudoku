@@ -4,11 +4,13 @@
   (:require [hyperfiddle.electric :as e]
             [hyperfiddle.electric-dom2 :as dom]
             [hyperfiddle.electric-ui4 :as ui]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            #?(:clj [duratom.core :refer [duratom]])))
 
 
 ;;; logic
 ;;;;;;;;;
+
 (defn map2dv [f]
   (mapv #(mapv (partial f %) (range 9)) (range 9)))
 
@@ -34,16 +36,30 @@
   (if (number? v) #{v} v))
   ; (and (not notes) (set? v) (= 1 (count v))) (first v)
 
+
 ;;; app state
 ;;;;;;;;;;;;;
+
 ; dynamic def for sharing state between server/client
 (e/def state)
 
+#?(:clj (defn make-atom [init-val]
+          (let [state-file-path (System/getenv "SUDOKU_STATE_FILE")]
+            (if state-file-path
+              (do
+                (println "storing state in" state-file-path)
+                (duratom :local-file
+                         :file-path state-file-path
+                         :init init-val))
+              (atom init-val)))))
+
 ; server-side atom for actual storage
-(def !state #?(:clj (atom (make-sudoku 64))))
+(def !state #?(:clj (make-atom (make-sudoku 64))))
+
 
 ;;; view stuff
 ;;;;;;;;;;;;;;
+
 (defn i->num [v]
   (inc (+ v (quot v 3))))
 

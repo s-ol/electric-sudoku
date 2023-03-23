@@ -21,6 +21,8 @@ FROM amazoncorretto:11 AS app
 WORKDIR /app
 COPY --from=build /app/app.jar app.jar
 EXPOSE 8080
+VOLUME /data
+ENV SUDOKU_STATE_FILE=/data/sudoku.edn
 ARG VERSION
 ENV VERSION=$VERSION
 CMD java -DHYPERFIDDLE_ELECTRIC_VERSION=$VERSION -jar app.jar
